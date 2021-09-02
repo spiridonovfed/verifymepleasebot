@@ -58,8 +58,7 @@ def ban_user(update, context):
     print(f"User {user_username} with id {user_id} was banned")
     sqlighter.insert_banned_user(user_id, user_username)
     context.bot.sendMessage(chat_id=update.message.chat.id,
-                            text='This user is banned now. '
-                                 'The user is notified about it and you will not see his or hers further messages.',
+                            text='This user is banned now.',
                             reply_to_message_id=update.message.message_id)
     # context.bot.sendMessage(chat_id=update.message.reply_to_message.forward_from.id,
     #                         text='You are banned! Admins cannot see you messages.')
