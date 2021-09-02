@@ -2,10 +2,11 @@ import os
 from telegram.ext import CommandHandler, MessageHandler, Filters
 
 from settings import WELCOME_MESSAGE, TELEGRAM_SUPPORT_CHAT_ID
+import sqlighter
+
 
 def start(update, context):
     update.message.reply_text(WELCOME_MESSAGE)
-
 
 
 def forward_to_chat(update, context):
@@ -16,7 +17,14 @@ def forward_to_chat(update, context):
         'text': 'TEST QOO', 'entities': [], 'caption_entities': [], 'photo': [], 'new_chat_members': [], 'new_chat_photo': [], 'delete_chat_photo': False, 'group_chat_created': False, 'supergroup_chat_created': False, 'channel_chat_created': False, 
         'from': {'id': 49820636, 'first_name': 'Daniil', 'is_bot': False, 'last_name': 'Okhlopkov', 'username': 'danokhlopkov', 'language_code': 'en'}
     }"""
-    update.message.forward(chat_id=TELEGRAM_SUPPORT_CHAT_ID)
+    user_id = update.message.from_user.id
+    if not sqlighter.check_in_ban_list(user_id):
+        update.message.forward(chat_id=TELEGRAM_SUPPORT_CHAT_ID)
+    else:
+        print("This user is banned")
+        context.bot.sendMessage(chat_id=update.message.chat.id,
+                                text='You are banned! Admins cannot see you messages.',
+                                reply_to_message_id=update.message.message_id)
 
 
 def forward_to_user(update, context):
@@ -44,8 +52,22 @@ def forward_to_user(update, context):
     )
 
 
+def ban_user(update, context):
+    user_id = update.message.reply_to_message.forward_from.id
+    user_username = update.message.reply_to_message.forward_from.username
+    print(f"User {user_username} with id {user_id} was banned")
+    sqlighter.insert_banned_user(user_id, user_username)
+    context.bot.sendMessage(chat_id=update.message.chat.id,
+                            text='This user is banned now. '
+                                 'The user is notified about it and you will not see his or hers further messages.',
+                            reply_to_message_id=update.message.message_id)
+    context.bot.sendMessage(chat_id=update.message.reply_to_message.forward_from.id,
+                            text='You are banned! Admins cannot see you messages.')
+
+
 def setup_dispatcher(dp):
     dp.add_handler(CommandHandler('start', start))
     dp.add_handler(MessageHandler(Filters.chat_type.private, forward_to_chat))
+    dp.add_handler(MessageHandler(Filters.chat(TELEGRAM_SUPPORT_CHAT_ID) & Filters.reply & Filters.regex('Ban!'), ban_user))
     dp.add_handler(MessageHandler(Filters.chat(TELEGRAM_SUPPORT_CHAT_ID) & Filters.reply, forward_to_user))
     return dp
