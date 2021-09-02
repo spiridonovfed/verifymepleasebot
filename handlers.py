@@ -20,11 +20,11 @@ def forward_to_chat(update, context):
     user_id = update.message.from_user.id
     if not sqlighter.check_in_ban_list(user_id):
         update.message.forward(chat_id=TELEGRAM_SUPPORT_CHAT_ID)
-    else:
-        print("This user is banned")
-        context.bot.sendMessage(chat_id=update.message.chat.id,
-                                text='You are banned! Admins cannot see you messages.',
-                                reply_to_message_id=update.message.message_id)
+    # else:
+    #     print("This user is banned")
+    #     context.bot.sendMessage(chat_id=update.message.chat.id,
+    #                             text='You are banned! Admins cannot see you messages.',
+    #                             reply_to_message_id=update.message.message_id)
 
 
 def forward_to_user(update, context):
@@ -61,8 +61,8 @@ def ban_user(update, context):
                             text='This user is banned now. '
                                  'The user is notified about it and you will not see his or hers further messages.',
                             reply_to_message_id=update.message.message_id)
-    context.bot.sendMessage(chat_id=update.message.reply_to_message.forward_from.id,
-                            text='You are banned! Admins cannot see you messages.')
+    # context.bot.sendMessage(chat_id=update.message.reply_to_message.forward_from.id,
+    #                         text='You are banned! Admins cannot see you messages.')
 
 
 def setup_dispatcher(dp):
